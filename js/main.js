@@ -10,6 +10,8 @@
   const navbar = document.getElementById('navbar');
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
+  const navBackdrop = document.getElementById('navBackdrop');
+  const mobileNavDrawer = document.getElementById('mobileNavDrawer');
 
   window.addEventListener('scroll', () => {
     if (window.scrollY > 60) {
@@ -21,29 +23,66 @@
     toggleBackToTop();
   });
 
+  function openNav() {
+    if (mobileNavDrawer) {
+      mobileNavDrawer.classList.add('open');
+      mobileNavDrawer.setAttribute('aria-hidden', 'false');
+    }
+    navToggle.classList.add('active');
+    navToggle.setAttribute('aria-expanded', 'true');
+    if (navBackdrop) navBackdrop.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeNav() {
+    if (mobileNavDrawer) {
+      mobileNavDrawer.classList.remove('open');
+      mobileNavDrawer.setAttribute('aria-hidden', 'true');
+    }
+    navToggle.classList.remove('active');
+    navToggle.setAttribute('aria-expanded', 'false');
+    if (navBackdrop) navBackdrop.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+
   navToggle.addEventListener('click', () => {
-    const isOpen = navLinks.classList.toggle('open');
-    navToggle.setAttribute('aria-expanded', isOpen);
-    document.body.style.overflow = isOpen ? 'hidden' : '';
+    const isOpen = mobileNavDrawer && mobileNavDrawer.classList.contains('open');
+    isOpen ? closeNav() : openNav();
   });
 
-  // Close nav on link click
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-      navLinks.classList.remove('open');
-      navToggle.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+  // Close mobile drawer on any link click inside it
+  if (mobileNavDrawer) {
+    mobileNavDrawer.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => closeNav());
     });
+  }
+
+  // Close nav on desktop nav-link click
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => closeNav());
   });
+
+  // Close nav on backdrop click
+  if (navBackdrop) navBackdrop.addEventListener('click', () => closeNav());
 
   // Close nav on outside click
   document.addEventListener('click', (e) => {
-    if (!navbar.contains(e.target)) {
-      navLinks.classList.remove('open');
-      navToggle.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+    if (
+      !navbar.contains(e.target) &&
+      !(mobileNavDrawer && mobileNavDrawer.contains(e.target)) &&
+      !(navBackdrop && navBackdrop.contains(e.target))
+    ) {
+      closeNav();
     }
   });
+
+  // Close mobile CTA bar Book Now properly
+  const mobileCTABar = document.getElementById('mobileCTABar');
+  if (mobileCTABar) {
+    mobileCTABar.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', () => closeNav());
+    });
+  }
 
   /* ===== ACTIVE NAV HIGHLIGHT ===== */
   function updateActiveNav() {
@@ -309,11 +348,6 @@
         if (link) link.click();
       }
     });
-  });
-
-  /* ===== NAVBAR HAMBURGER ANIMATION ===== */
-  navToggle.addEventListener('click', () => {
-    navToggle.classList.toggle('active');
   });
 
   console.log('%c🏥 Sai Krupa Clinic — Website Loaded', 'color: #3B82F6; font-size: 14px; font-weight: bold;');
